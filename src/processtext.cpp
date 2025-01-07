@@ -10,10 +10,10 @@ ProcessText::ProcessText(QWidget *parent)
     ui->setupUi(this);
     // 菜单栏
     // 文件菜单
-    // connect(ui->openFileMenuAction, &QAction::triggered, this, &ProcessText::openFileMenu);
-    // connect(ui->saveFileMenuAction, &QAction::triggered, this, &ProcessText::saveFileMenu);
-    // connect(ui->undoAction, &QAction::triggered, undo_stack, &QUndoStack::undo);
-    // connect(ui->redoAction, &QAction::triggered, undo_stack, &QUndoStack::redo);
+    connect(ui->openaction, &QAction::triggered, this, &ProcessText::openFileMenu);
+    connect(ui->saveaction, &QAction::triggered, this, &ProcessText::saveFileMenu);
+    connect(ui->undoaction, &QAction::triggered, undo_stack, &QUndoStack::undo);
+    connect(ui->redoaction, &QAction::triggered, undo_stack, &QUndoStack::redo);
 
     // QTabWidget
     // 按钮
@@ -389,5 +389,11 @@ void ProcessText::replaceSlash() {
     QString new_text = text;
     undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
     ui->textEdit->setText(text);
+}
+
+
+void ProcessText::on_closeaction_triggered()
+{
+    close();
 }
 

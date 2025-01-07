@@ -58,5 +58,6 @@ private slots:
     void getEqualDomain();
     void pickCherryHREF();
     void getHREFvalue();
+    void on_closeaction_triggered();
 };
 #endif // PROCESSTEXT_H

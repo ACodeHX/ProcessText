@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>ProcessText</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../data/img.qrc">
+    <normaloff>:/img/apply.svg</normaloff>:/img/apply.svg</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
@@ -332,9 +336,74 @@
      <height>24</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="openaction"/>
+    <addaction name="saveaction"/>
+    <addaction name="undoaction"/>
+    <addaction name="redoaction"/>
+    <addaction name="closeaction"/>
+   </widget>
+   <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="openaction">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentPageSetup"/>
+   </property>
+   <property name="text">
+    <string>打开</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="saveaction">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentSave"/>
+   </property>
+   <property name="text">
+    <string>保存</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="closeaction">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::ApplicationExit"/>
+   </property>
+   <property name="text">
+    <string>关闭</string>
+   </property>
+  </action>
+  <action name="undoaction">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::EditUndo"/>
+   </property>
+   <property name="text">
+    <string>撤销</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="redoaction">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::EditRedo"/>
+   </property>
+   <property name="text">
+    <string>重做</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Z</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="../data/img.qrc"/>
+ </resources>
  <connections/>
 </ui>
