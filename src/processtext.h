@@ -31,11 +31,16 @@ public:
 private:
     Ui::ProcessText *ui;
     QUndoStack *undo_stack;
+
+    std::function<void()> last_action;
+
     void estimateVisible(QWidget *widget);
 
     Content *content_dialog;
 
 private slots:
+    // 执行上一个操作
+    void repeatLastAction();
     // 菜单栏活动
     void openFileMenu();
     void saveFileMenu();

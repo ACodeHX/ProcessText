@@ -342,11 +342,21 @@
     </property>
     <addaction name="openaction"/>
     <addaction name="saveaction"/>
+    <addaction name="separator"/>
     <addaction name="undoaction"/>
     <addaction name="redoaction"/>
+    <addaction name="separator"/>
+    <addaction name="repeataction"/>
+    <addaction name="separator"/>
     <addaction name="closeaction"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>关于</string>
+    </property>
+   </widget>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="openaction">
@@ -399,6 +409,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+Z</string>
+   </property>
+  </action>
+  <action name="repeataction">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::SystemReboot"/>
+   </property>
+   <property name="text">
+    <string>执行上一个操作</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
    </property>
   </action>
  </widget>

@@ -14,6 +14,7 @@ ProcessText::ProcessText(QWidget *parent)
     connect(ui->saveaction, &QAction::triggered, this, &ProcessText::saveFileMenu);
     connect(ui->undoaction, &QAction::triggered, undo_stack, &QUndoStack::undo);
     connect(ui->redoaction, &QAction::triggered, undo_stack, &QUndoStack::redo);
+    connect(ui->repeataction, &QAction::triggered, this, &ProcessText::repeatLastAction);
 
     // QTabWidget
     // 按钮
@@ -53,6 +54,7 @@ void ProcessText::estimateVisible(QWidget *widget) {
     }
 }
 
+// 文本的撤销与重做
 class TextDispose : public QUndoCommand {
 public:
     TextDispose(QTextEdit *text_edit, const QString &prev_text, const QString &new_text, QUndoCommand *parent = nullptr)
@@ -117,6 +119,21 @@ void ProcessText::saveFileMenu() {
     file.close();
 }
 
+// 关闭程序
+void ProcessText::on_closeaction_triggered()
+{
+    close();
+}
+
+// 执行上一个操作
+void ProcessText::repeatLastAction() {
+    if (last_action) {
+        last_action();
+    } else {
+        QMessageBox::warning(this, tr("Waring"), tr("No action"));
+    }
+}
+
 // 获得文本,处理文本
 void ProcessText::processText(const std::function<QString(QString &)> &lineProcessor)
 {
@@ -172,12 +189,16 @@ void ProcessText::addContentBeform() {
     undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
     ui->textEdit->setPlainText(new_text);
 
+    last_action = [this]() { addContentBeform(); };
 }
+
 // 添加引号按钮
 void ProcessText::addQuotation() {
     processText([](const QString &line) {
         return "\"" + line + "\"";
     });
+
+    last_action = [this]() { addQuotation(); };
 }
 
 // 将中文符号替换成英文按钮
@@ -188,6 +209,8 @@ void ProcessText::replaceCNtoENsymbol() {
         line.replace(QChar(0x3002), QChar('.'));
         return line;
     });
+
+    last_action = [this]() { replaceCNtoENsymbol(); };
 }
 
 // 去除注释符
@@ -199,6 +222,8 @@ void ProcessText::removeAnnotators() {
         }
         return line.trimmed();
     });
+
+    last_action = [this]() { removeAnnotators(); };
 }
 
 // 替换大小写字母
@@ -213,6 +238,8 @@ void ProcessText::convertCase() {
         }
         return line;
     });
+
+    last_action = [this]() { convertCase(); };
 }
 
 // 将文本按字母升序排序
@@ -229,6 +256,8 @@ void ProcessText::setUpSequence() {
     QString new_text = text;
     undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
     ui->textEdit->setText(text);
+
+    last_action = [this]() { setUpSequence(); };
 }
 
 // 将文本按字母降序排序
@@ -245,6 +274,8 @@ void ProcessText::setDownSequence() {
     QString new_text = text;
     undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
     ui->textEdit->setText(text);
+
+    last_action = [this]() { setDownSequence(); };
 }
 
 // 提取 href 字段
@@ -273,6 +304,8 @@ void ProcessText::getHREFvalue() {
 
     undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
     ui->textEdit->setText(new_text);
+
+    last_action = [this]() { getHREFvalue(); };
 }
 
 //
@@ -301,6 +334,8 @@ void ProcessText::pickCherryHREF() {
 
     undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
     ui->textEdit->setText(new_text);
+
+    last_action = [this]() { pickCherryHREF(); };
 }
 
 // 提取相同域名的网站
@@ -328,6 +363,8 @@ void ProcessText::getEqualDomain() {
     QString new_text = duplicates.join("\n");
     undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
     ui->textEdit->setText(new_text);
+
+    last_action = [this]() { getEqualDomain(); };
 }
 
 // 域名提取
@@ -350,6 +387,8 @@ void ProcessText::getDomain() {
     // 将提取后的文本放回 QTextEdit
     undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
     ui->textEdit->setText(new_text);
+
+    last_action = [this]() { getDomain(); };
 }
 
 // 末尾添加逗号
@@ -366,6 +405,8 @@ void ProcessText::addLastComma() {
     QString new_text = text;
     undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
     ui->textEdit->setText(text);
+
+    last_action = [this]() { addLastComma(); };
 }
 
 // 替换正反斜杠
@@ -389,11 +430,10 @@ void ProcessText::replaceSlash() {
     QString new_text = text;
     undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
     ui->textEdit->setText(text);
+
+    last_action = [this]() { replaceSlash(); };
 }
 
 
-void ProcessText::on_closeaction_triggered()
-{
-    close();
-}
+
 
