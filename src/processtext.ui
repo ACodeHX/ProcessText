@@ -57,7 +57,7 @@
          </sizepolicy>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -378,11 +378,6 @@
     <addaction name="openfolderaction"/>
     <addaction name="saveaction"/>
     <addaction name="separator"/>
-    <addaction name="undoaction"/>
-    <addaction name="redoaction"/>
-    <addaction name="separator"/>
-    <addaction name="repeataction"/>
-    <addaction name="separator"/>
     <addaction name="closeaction"/>
    </widget>
    <widget class="QMenu" name="menu_2">
@@ -391,7 +386,17 @@
     </property>
     <addaction name="aboutaction"/>
    </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>编辑</string>
+    </property>
+    <addaction name="undoaction"/>
+    <addaction name="redoaction"/>
+    <addaction name="repeataction"/>
+    <addaction name="ClearTextBoxaction"/>
+   </widget>
    <addaction name="menu"/>
+   <addaction name="menu_3"/>
    <addaction name="menu_2"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -475,6 +480,11 @@
    </property>
    <property name="toolTip">
     <string>打开文件夹</string>
+   </property>
+  </action>
+  <action name="ClearTextBoxaction">
+   <property name="text">
+    <string>清除文本框</string>
    </property>
   </action>
  </widget>

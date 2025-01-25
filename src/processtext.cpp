@@ -703,3 +703,9 @@ void ProcessText::on_pushButton_clicked()
     }
 }
 
+// 清除文本框
+void ProcessText::on_ClearTextBoxaction_triggered()
+{
+    ui->textEdit->clear();
+}
+

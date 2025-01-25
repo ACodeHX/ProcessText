@@ -73,5 +73,6 @@ private slots:
     void on_aboutaction_triggered();
     void on_pushButton_clicked();
     void on_openfolderaction_triggered();
+    void on_ClearTextBoxaction_triggered();
 };
 #endif // PROCESSTEXT_H
