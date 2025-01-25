@@ -1,5 +1,5 @@
-#include "content.h"
-#include "ui_content.h"
+#include "./content.h"
+#include "./ui_content.h"
 
 Content::Content(
     QWidget *parent)

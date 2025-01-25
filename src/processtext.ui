@@ -57,7 +57,7 @@
          </sizepolicy>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -321,6 +321,40 @@
           </item>
          </layout>
         </widget>
+        <widget class="QWidget" name="tab_4">
+         <attribute name="title">
+          <string>电子书</string>
+         </attribute>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <layout class="QGridLayout" name="gridLayout_7">
+            <item row="0" column="1">
+             <widget class="QPushButton" name="pushButton">
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="text">
+               <string>格式化目录标题</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <spacer name="verticalSpacer_4">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
      </layout>
@@ -341,6 +375,7 @@
      <string>文件</string>
     </property>
     <addaction name="openaction"/>
+    <addaction name="openfolderaction"/>
     <addaction name="saveaction"/>
     <addaction name="separator"/>
     <addaction name="undoaction"/>
@@ -352,8 +387,9 @@
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
-     <string>关于</string>
+     <string>帮助</string>
     </property>
+    <addaction name="aboutaction"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -420,6 +456,25 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="aboutaction">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::HelpAbout"/>
+   </property>
+   <property name="text">
+    <string>关于</string>
+   </property>
+  </action>
+  <action name="openfolderaction">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::FolderOpen"/>
+   </property>
+   <property name="text">
+    <string>打开文件夹</string>
+   </property>
+   <property name="toolTip">
+    <string>打开文件夹</string>
    </property>
   </action>
  </widget>

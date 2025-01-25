@@ -80,3 +80,6 @@ CMakeLists.txt.user*
 .rcc/
 .uic/
 /build*/
+/doc/
+/.vscode/
+/desktop.ini

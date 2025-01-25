@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <QDebug>
 #include <QFileDialog>
@@ -13,6 +14,7 @@
 #include <QRegularExpression>
 #include <functional>
 #include "content.h"
+#include "about.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -26,6 +28,7 @@ class ProcessText : public QMainWindow
 
 public:
     ProcessText(QWidget *parent = nullptr);
+    inline bool judgeTextExist();
     ~ProcessText();
 
 private:
@@ -33,10 +36,13 @@ private:
     QUndoStack *undo_stack;
 
     std::function<void()> last_action;
+    Content *content_dialog;
 
     void estimateVisible(QWidget *widget);
-
-    Content *content_dialog;
+    int judgeFolder();
+    int judgeFile();
+    QString replaceSymbols(const QString &line);
+    void processFolder(const std::function<void(QTextStream &in, QTextStream &out)> &processLine);
 
 private slots:
     // 执行上一个操作
@@ -64,5 +70,8 @@ private slots:
     void pickCherryHREF();
     void getHREFvalue();
     void on_closeaction_triggered();
+    void on_aboutaction_triggered();
+    void on_pushButton_clicked();
+    void on_openfolderaction_triggered();
 };
 #endif // PROCESSTEXT_H

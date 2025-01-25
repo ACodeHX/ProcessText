@@ -45,15 +45,6 @@ ProcessText::~ProcessText()
     delete content_dialog;
 }
 
-// 判断按钮是否隐藏
-void ProcessText::estimateVisible(QWidget *widget) {
-    if (widget->isVisible()) {
-        widget->hide();
-    } else {
-        widget->show();
-    }
-}
-
 // 文本的撤销与重做
 class TextDispose : public QUndoCommand {
 public:
@@ -76,7 +67,13 @@ private:
 
 // 打开文件菜单栏
 void ProcessText::openFileMenu() {
-    QString file_path = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("*.txt *.md *.cpp *.java *.python"));
+    QString file_path = QFileDialog::getOpenFileName(
+        this,
+        tr("Open File"),
+        "",
+        tr("*.txt *.md *.cpp *.java *.python")
+        );
+
     if (!file_path.isEmpty()) {
         ui->lineEdit->setText(file_path);
     } else {
@@ -99,38 +96,137 @@ void ProcessText::openFileMenu() {
     file.close();
 }
 
-// 保存到文件
-void ProcessText::saveFileMenu() {
-    QString file_path = ui->lineEdit->text();
-    if (file_path.isEmpty()) {
-        file_path = QFileDialog::getSaveFileName(this, tr("Save file"), "", tr("*.*"));
-        ui->lineEdit->setText(file_path);
+// 打开文件夹
+void ProcessText::on_openfolderaction_triggered()
+{
+    QString folder_path = QFileDialog::getExistingDirectory(
+        nullptr,
+        "Select Folder",
+        QDir::homePath(),
+        QFileDialog::ShowDirsOnly
+        );
+
+    if (!folder_path.isEmpty()) {
+        qDebug() << "Seleted folder: " << folder_path;
+    } else {
+        qDebug() << "No folder seleted.";
     }
 
-    QFile file(file_path);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) { // 以写入模式打开文件
-        qWarning() << "无法打开文件:" << file.errorString(); // 输出错误信息
+    ui->lineEdit->setText(folder_path);
+}
+
+// 判断文件夹是否存在,逻辑基本完成
+int ProcessText::judgeFolder() {
+    const QString file_name = ui->lineEdit->text();
+
+    if (file_name.isEmpty()) {
+        return 0;
+    }
+
+    QFileInfo path_info(file_name);
+
+    if (!path_info.exists()) {
+        qDebug() << "The path does not exist.";
+        return 0;
+    }
+    else if (path_info.isDir()) {
+        qDebug() << "is dir";
+        return 1;
+    }
+
+    return 0;
+}
+
+// 判断文件是否存在,逻辑基本完成
+int ProcessText::judgeFile() {
+    const QString file_name = ui->lineEdit->text();
+
+    if (file_name.isEmpty()) {
+        return 0;
+    }
+
+    QFileInfo path_info(file_name);
+
+    if (!path_info.exists()) {
+        qDebug() << "The path does not exist.";
+        return 0;
+    }
+    else if (path_info.isFile()) {
+        qDebug() << "is dir";
+        return 1;
+    }
+
+    return 0;
+}
+
+// 判断按钮是否隐藏
+void ProcessText::estimateVisible(QWidget *widget) {
+    if (widget->isVisible()) {
+        widget->hide();
+    } else {
+        widget->show();
+    }
+}
+
+bool ProcessText::judgeTextExist() {
+    QString text = ui->textEdit->toPlainText();
+    if (text.isEmpty()) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+// 处理文件夹的文件
+void ProcessText::processFolder(const std::function<void(QTextStream &in, QTextStream &out)> &processLine) {
+    bool value = judgeFolder();
+
+    if (!value) {
         return;
     }
 
-    QTextStream out(&file);
-    out << ui->textEdit->toPlainText();
+    // 筛选文件
+    QDir dir(ui->lineEdit->text());
+    QStringList filters;
+    filters << "*.txt";
+    QFileInfoList file_list = dir.entryInfoList(filters, QDir::Files | QDir::NoDotAndDotDot);
 
-    file.close();
-}
+    for (const QFileInfo &file_info : file_list) {
+        QString file_path = file_info.absoluteFilePath();
 
-// 关闭程序
-void ProcessText::on_closeaction_triggered()
-{
-    close();
-}
+        QFile input_file(file_path);
+        if (!input_file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qDebug() << "Faild to open file for reading:" << file_path;
+            continue;
+        }
 
-// 执行上一个操作
-void ProcessText::repeatLastAction() {
-    if (last_action) {
-        last_action();
-    } else {
-        QMessageBox::warning(this, tr("Waring"), tr("No action"));
+        QString temp_file_path = file_path + ".tmp";
+        QFile temp_file(temp_file_path);
+        if (!temp_file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            qDebug() << "Faild to open temp file for writing:" << temp_file_path;
+            input_file.close();
+            continue;
+        }
+
+        QTextStream in(&input_file);
+        QTextStream out(&temp_file);
+
+        // 调用传递的处理逻辑
+        processLine(in, out);
+
+        input_file.close();
+        temp_file.close();
+
+        // 替换原文件
+        if (QFile::remove(file_path)) {
+            if (QFile::rename(temp_file_path, file_path)) {
+                qDebug() << "File processed successfully:" << file_path;
+            } else {
+                qDebug() << "Failed to rename temp file.";
+            }
+        } else {
+            qDebug() << "Failed to remove original file.";
+        }
     }
 }
 
@@ -151,6 +247,41 @@ void ProcessText::processText(const std::function<QString(QString &)> &lineProce
     undo_stack->push(new TextDispose(ui->textEdit, prev_text, new_text));
 
     ui->textEdit->setPlainText(text);
+}
+
+// 保存到文件
+void ProcessText::saveFileMenu() {
+    QString file_path = ui->lineEdit->text();
+    if (file_path.isEmpty()) {
+        file_path = QFileDialog::getSaveFileName(this, tr("Save file"), "", tr("*.*"));
+        ui->lineEdit->setText(file_path);
+    }
+
+    QFile file(file_path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) { // 以写入模式打开文件
+        qWarning() << "无法打开文件:" << file.errorString(); // 输出错误信息
+        return;
+    }
+
+    QTextStream out(&file);
+    out << ui->textEdit->toPlainText();
+
+    file.close();
+}
+
+// 关闭程序,这个不需要修改
+void ProcessText::on_closeaction_triggered()
+{
+    close();
+}
+
+// 执行上一个操作,逻辑基本完成
+void ProcessText::repeatLastAction() {
+    if (last_action) {
+        last_action();
+    } else {
+        QMessageBox::warning(this, tr("Waring"), tr("No action"));
+    }
 }
 
 // 添加
@@ -194,55 +325,143 @@ void ProcessText::addContentBeform() {
 
 // 添加引号按钮
 void ProcessText::addQuotation() {
-    processText([](const QString &line) {
-        return "\"" + line + "\"";
-    });
+    int value = judgeFolder();
+
+
+    if (value == 1) {
+        processFolder([](QTextStream &in,QTextStream &out) {
+            while (!in.atEnd()) {
+                QString line = in.readLine();
+                out << "\"" << line << "\"" << "\n";
+            }
+        });
+    }
+
+    if (judgeTextExist()) {
+        processText([](const QString &line) {
+            return "\"" + line + "\"";
+        });
+    }
 
     last_action = [this]() { addQuotation(); };
 }
 
+// 末尾添加逗号
+void ProcessText::addLastComma() {
+    int value = judgeFolder();
+
+    if (value == 1) {
+        processFolder([](QTextStream &in,QTextStream &out) {
+            while (!in.atEnd()) {
+                QString line = in.readLine();
+                out << line << ",";
+            }
+        });
+    }
+
+    if (judgeTextExist()){
+        processText([](const QString &line) {
+            return line + ",";
+        });
+    }
+
+    last_action = [this]() { addLastComma(); };
+}
+
+// 修改
 // 将中文符号替换成英文按钮
 void ProcessText::replaceCNtoENsymbol() {
-    processText([](QString &line) {
-        line.replace(QChar(0xff08), QChar('('));
-        line.replace(QChar(0xff09), QChar(')'));
-        line.replace(QChar(0x3002), QChar('.'));
-        return line;
-    });
+    int value = judgeFolder();
+
+    if (value == 1) {
+        processFolder([](QTextStream &in,QTextStream &out) {
+            while (!in.atEnd()) {
+                QString line = in.readLine();
+                line.replace(QChar(0xff08), QChar('('));
+                line.replace(QChar(0xff09), QChar(')'));
+                line.replace(QChar(0x3002), QChar('.'));
+                out << line <<"\n";
+            };
+        });
+    }
+
+    if (judgeTextExist()) {
+        processText([](QString &line) {
+            line.replace(QChar(0xff08), QChar('('));
+            line.replace(QChar(0xff09), QChar(')'));
+            line.replace(QChar(0x3002), QChar('.'));
+            return line;
+        });
+    }
 
     last_action = [this]() { replaceCNtoENsymbol(); };
 }
 
 // 去除注释符
 void ProcessText::removeAnnotators() {
-    processText([](QString &line) {
-        int index = line.indexOf("//");
-        if (index != -1) {
-            line = line.left(index) + line.mid(index + 2); // 去掉注释
-        }
-        return line.trimmed();
-    });
+    int value = judgeFolder();
+
+    if (value == 1) {
+        processFolder([](QTextStream &in,QTextStream &out){
+            QString line = in.readLine();
+            int index = line.indexOf("//");
+            if (index != -1) {
+                line = line.left(index) + line.mid(index + 2); // 去掉注释
+            }
+            out << line << "\n";
+        });
+    }
+
+    if (judgeTextExist()) {
+        processText([](QString &line) {
+            int index = line.indexOf("//");
+            if (index != -1) {
+                line = line.left(index) + line.mid(index + 2); // 去掉注释
+            }
+            return line.trimmed();
+        });
+    }
 
     last_action = [this]() { removeAnnotators(); };
 }
 
 // 替换大小写字母
 void ProcessText::convertCase() {
-    processText([](QString &line) {
-        for (int i = 0; i < line.size(); i++) {
-            if (line[i].isLower()) {
-                line[i] = line[i].toUpper();
-            } else if (line[i].isUpper()) {
-                line[i] = line[i].toLower();
+    int value = judgeFolder();
+
+    if (value == 1) {
+        processFolder([](QTextStream &in,QTextStream &out) {
+            while (!in.atEnd()) {
+                QString line = in.readLine();
+                for (int i = 0; i < line.size(); i++) {
+                    if (line[i].isLower()) {
+                        line[i] = line[i].toUpper();
+                    } else if (line[i].isUpper()) {
+                        line[i] = line[i].toLower();
+                    }
+                }
+                out << line << "\n";
+            };
+        });
+    }
+    
+    if (judgeTextExist()) {
+        processText([](QString &line) {
+            for (int i = 0; i < line.size(); i++) {
+                if (line[i].isLower()) {
+                    line[i] = line[i].toUpper();
+                } else if (line[i].isUpper()) {
+                    line[i] = line[i].toLower();
+                }
             }
-        }
-        return line;
-    });
+            return line;
+        });
+    }
 
     last_action = [this]() { convertCase(); };
 }
 
-// 将文本按字母升序排序
+// 将文本排序
 void ProcessText::setUpSequence() {
     QString text = ui->textEdit->toPlainText();
     QString perv_text = text;
@@ -260,7 +479,6 @@ void ProcessText::setUpSequence() {
     last_action = [this]() { setUpSequence(); };
 }
 
-// 将文本按字母降序排序
 void ProcessText::setDownSequence() {
     QString text = ui->textEdit->toPlainText();
     QString perv_text = text;
@@ -285,7 +503,7 @@ void ProcessText::getHREFvalue() {
     QStringList lines = text.split("\n", Qt::SkipEmptyParts);
     QSet<QString> urls;
 
-    QRegularExpression website_regular(R"(href="([^"]+)"")");
+    QRegularExpression website_regular(R"((?i)href="([^"]+)"")");
 
     QString new_text;
 
@@ -293,7 +511,7 @@ void ProcessText::getHREFvalue() {
         QRegularExpressionMatchIterator i = website_regular.globalMatch(line);
         while (i.hasNext()) {
             QRegularExpressionMatch match = i.next();
-            QString url = match.captured(0);
+            QString url = match.captured(1);
 
             if (!urls.contains(url)) {
                 urls.insert(url);
@@ -308,7 +526,7 @@ void ProcessText::getHREFvalue() {
     last_action = [this]() { getHREFvalue(); };
 }
 
-//
+// 提取网站
 void ProcessText::pickCherryHREF() {
     QString text = ui->textEdit->toPlainText();
     QString perv_text = text;
@@ -391,26 +609,25 @@ void ProcessText::getDomain() {
     last_action = [this]() { getDomain(); };
 }
 
-// 末尾添加逗号
-void ProcessText::addLastComma() {
-    QString text = ui->textEdit->toPlainText();
-    QString perv_text = text;
-    QStringList lines = text.split("\n", Qt::SkipEmptyParts);
-
-    for (int i = 0; i < lines.size(); i++) {
-        lines[i] = lines[i] + ",";
-    }
-
-    text = lines.join("\n");
-    QString new_text = text;
-    undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
-    ui->textEdit->setText(text);
-
-    last_action = [this]() { addLastComma(); };
-}
-
 // 替换正反斜杠
 void ProcessText::replaceSlash() {
+    // int value = judgeFolder();
+
+    // if (value == 1) {
+    //     processFolder([](QTextStream &in, QTextStream &out) {
+    //         while (!in.atEnd()) {
+    //             QString line = in.readLine();
+    //             line.replace("\\", "/"); // 将所有反斜杠替换为正斜杠
+    //             out << line << "\n";
+    //         }
+    //     });
+    // } else if (value == 0) {
+    //     processText([](QString &line) -> QString {
+    //         line.replace("\\", "/"); // 将所有反斜杠替换为正斜杠
+    //         return line;
+    //     });
+    // }
+
     QString text = ui->textEdit->toPlainText();
     QString perv_text = text;
     QStringList lines = text.split("\n", Qt::SkipEmptyParts);
@@ -434,6 +651,55 @@ void ProcessText::replaceSlash() {
     last_action = [this]() { replaceSlash(); };
 }
 
+// 关于 的活动按钮
+void ProcessText::on_aboutaction_triggered()
+{
+    About *dialog = new About();
+    // dialog->exec();
+}
 
+// 替换电子数的章节的换行符
+void ProcessText::on_pushButton_clicked()
+{
+    int value = judgeFolder();
+    QRegularExpression regex(R"(^<p>(\d+\.\d+)(\.\d+)?\s(.*)<\/p>$)");
 
+    if (value == 1) {
+        processFolder([regex](QTextStream &in, QTextStream &out) {
+            while (!in.atEnd()) {
+                QString line = in.readLine();
+                QRegularExpressionMatch match = regex.match(line);
+                if (match.hasMatch()) {
+                    QString number = match.captured(1);
+                    QString subNumber = match.captured(2);
+                    QString content = match.captured(3);
+
+                    if (subNumber.isEmpty()) {
+                        line = QString("<h4>%1 %2</h4>").arg(number, content);
+                    } else {
+                        line = QString("<h5>%1 %2</h5>").arg(number + subNumber, content);
+                    }
+                }
+                out << line << "\n";
+            }
+        });
+    }
+    if (judgeTextExist()){
+        processText([regex](QString &line) -> QString {
+            QRegularExpressionMatch match = regex.match(line);
+            if (match.hasMatch()) {
+                QString number = match.captured(1);
+                QString subNumber = match.captured(2);
+                QString content = match.captured(3);
+
+                if (subNumber.isEmpty()) {
+                    return QString("<h4>%1 %2</h4>").arg(number, content);
+                } else {
+                    return QString("<h5>%1 %2</h5>").arg(number + subNumber, content);
+                }
+            }
+            return line; // 如果不匹配，返回原始行
+        });
+    }
+}
 
