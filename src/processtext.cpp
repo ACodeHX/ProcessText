@@ -36,6 +36,7 @@ ProcessText::ProcessText(QWidget *parent)
     connect(ui->getEqualDomainButton, &QPushButton::clicked, this, &ProcessText::getEqualDomain);
     connect(ui->getDomainButton, &QPushButton::clicked, this, &ProcessText::getDomain);
     connect(ui->getHREFvalueButton, &QPushButton::clicked, this, &ProcessText::getHREFvalue);
+
 }
 
 ProcessText::~ProcessText()
@@ -656,51 +657,6 @@ void ProcessText::on_aboutaction_triggered()
 {
     About *dialog = new About();
     // dialog->exec();
-}
-
-// 替换电子数的章节的换行符
-void ProcessText::on_pushButton_clicked()
-{
-    int value = judgeFolder();
-    QRegularExpression regex(R"(^<p>(\d+\.\d+)(\.\d+)?\s(.*)<\/p>$)");
-
-    if (value == 1) {
-        processFolder([regex](QTextStream &in, QTextStream &out) {
-            while (!in.atEnd()) {
-                QString line = in.readLine();
-                QRegularExpressionMatch match = regex.match(line);
-                if (match.hasMatch()) {
-                    QString number = match.captured(1);
-                    QString subNumber = match.captured(2);
-                    QString content = match.captured(3);
-
-                    if (subNumber.isEmpty()) {
-                        line = QString("<h4>%1 %2</h4>").arg(number, content);
-                    } else {
-                        line = QString("<h5>%1 %2</h5>").arg(number + subNumber, content);
-                    }
-                }
-                out << line << "\n";
-            }
-        });
-    }
-    if (judgeTextExist()){
-        processText([regex](QString &line) -> QString {
-            QRegularExpressionMatch match = regex.match(line);
-            if (match.hasMatch()) {
-                QString number = match.captured(1);
-                QString subNumber = match.captured(2);
-                QString content = match.captured(3);
-
-                if (subNumber.isEmpty()) {
-                    return QString("<h4>%1 %2</h4>").arg(number, content);
-                } else {
-                    return QString("<h5>%1 %2</h5>").arg(number + subNumber, content);
-                }
-            }
-            return line; // 如果不匹配，返回原始行
-        });
-    }
 }
 
 // 清除文本框
