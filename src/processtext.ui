@@ -14,7 +14,7 @@
    <string>ProcessText</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../data/img.qrc">
+   <iconset resource="../data/data.qrc">
     <normaloff>:/img/apply.svg</normaloff>:/img/apply.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -66,13 +66,6 @@
          <layout class="QGridLayout" name="gridLayout_2">
           <item row="0" column="0">
            <layout class="QGridLayout" name="gridLayout">
-            <item row="1" column="4">
-             <widget class="QPushButton" name="replaceSlashButton">
-              <property name="text">
-               <string>斜杠替换</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="0">
              <spacer name="horizontalSpacer">
               <property name="orientation">
@@ -89,34 +82,6 @@
               </property>
              </spacer>
             </item>
-            <item row="1" column="5">
-             <widget class="QPushButton" name="replaceCaseButton">
-              <property name="text">
-               <string>大小写字母(转换)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QPushButton" name="setUpSequenceButton">
-              <property name="text">
-               <string>升序(字母)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="2">
-             <widget class="QPushButton" name="setDownSequenceButton">
-              <property name="text">
-               <string>降序(字母)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="3">
-             <widget class="QPushButton" name="replaceCNtoENsymbolButton">
-              <property name="text">
-               <string>中文转英文(符号)</string>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="1">
              <spacer name="verticalSpacer">
               <property name="orientation">
@@ -129,6 +94,41 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item row="1" column="4">
+             <widget class="QPushButton" name="replaceSlashButton">
+              <property name="text">
+               <string>斜杠替换</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QPushButton" name="replaceCNtoENsymbolButton">
+              <property name="text">
+               <string>中文转英文(符号)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QPushButton" name="setDownSequenceButton">
+              <property name="text">
+               <string>降序(字母)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QPushButton" name="setUpSequenceButton">
+              <property name="text">
+               <string>升序(字母)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="5">
+             <widget class="QPushButton" name="replaceCaseButton">
+              <property name="text">
+               <string>大小写字母(转换)</string>
+              </property>
+             </widget>
             </item>
             <item row="1" column="7">
              <spacer name="horizontalSpacer_2">
@@ -367,7 +367,7 @@
      <x>0</x>
      <y>0</y>
      <width>929</width>
-     <height>24</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -489,7 +489,7 @@
   </action>
  </widget>
  <resources>
-  <include location="../data/img.qrc"/>
+  <include location="../data/data.qrc"/>
  </resources>
  <connections/>
 </ui>

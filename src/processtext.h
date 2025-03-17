@@ -13,8 +13,11 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <functional>
+#include <QProcess>
+
 #include "content.h"
 #include "about.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

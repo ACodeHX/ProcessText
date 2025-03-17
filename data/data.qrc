@@ -2,4 +2,7 @@
     <qresource prefix="/img">
         <file>apply.svg</file>
     </qresource>
+    <qresource prefix="/exe">
+        <file>t2s.exe</file>
+    </qresource>
 </RCC>
