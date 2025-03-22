@@ -37,6 +37,8 @@ ProcessText::ProcessText(QWidget *parent)
     connect(ui->getDomainButton, &QPushButton::clicked, this, &ProcessText::getDomain);
     connect(ui->getHREFvalueButton, &QPushButton::clicked, this, &ProcessText::getHREFvalue);
 
+    // 网络
+    connect(ui->filterIPv4Button, &QPushButton::clicked, this, &ProcessText::filterIPv4);
 }
 
 ProcessText::~ProcessText()
@@ -650,6 +652,33 @@ void ProcessText::replaceSlash() {
     ui->textEdit->setText(text);
 
     last_action = [this]() { replaceSlash(); };
+}
+
+// 网络
+// 筛选IPv4
+void ProcessText::filterIPv4() {
+    QString text = ui->textEdit->toPlainText();
+    QString perv_text = text;
+    QStringList lines = text.split("\n", Qt::SkipEmptyParts);
+
+    // IPv4 正则表达式匹配
+    QRegularExpression ipv4Regex(R"(\b((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\b)");
+
+    QStringList filteredLines;
+    for (const QString &line : lines) {
+        QRegularExpressionMatch match = ipv4Regex.match(line);
+        if (match.hasMatch()) {
+            filteredLines.append(match.captured(0)); // 添加匹配的 IPv4 地址
+        }
+    }
+
+    text = filteredLines.join("\n");
+    QString new_text = text;
+
+    undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
+    ui->textEdit->setText(text);
+
+    last_action = [this]() { filterIPv4(); };
 }
 
 // 关于 的活动按钮

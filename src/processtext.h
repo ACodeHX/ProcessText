@@ -74,8 +74,9 @@ private slots:
     void getHREFvalue();
     void on_closeaction_triggered();
     void on_aboutaction_triggered();
-    void on_pushButton_clicked();
     void on_openfolderaction_triggered();
     void on_ClearTextBoxaction_triggered();
+    // 网络
+    void filterIPv4();
 };
 #endif // PROCESSTEXT_H
