@@ -383,6 +383,8 @@ void ProcessText::replaceCNtoENsymbol() {
                 line.replace(QChar(0xff08), QChar('('));
                 line.replace(QChar(0xff09), QChar(')'));
                 line.replace(QChar(0x3002), QChar('.'));
+                line.replace(QChar(0xff1a), QChar(':'));
+                line.replace(QChar(0xff0c), QChar(','));
                 out << line <<"\n";
             };
         });
@@ -393,6 +395,8 @@ void ProcessText::replaceCNtoENsymbol() {
             line.replace(QChar(0xff08), QChar('('));
             line.replace(QChar(0xff09), QChar(')'));
             line.replace(QChar(0x3002), QChar('.'));
+            line.replace(QChar(0xff1a), QChar(':'));
+            line.replace(QChar(0xff0c), QChar(','));
             return line;
         });
     }
