@@ -70,8 +70,7 @@ private slots:
     // 处理网站内容
     void getDomain();
     void getEqualDomain();
-    void pickCherryHREF();
-    void getHREFvalue();
+    void extractWebsite();
     void on_closeaction_triggered();
     void on_aboutaction_triggered();
     void on_openfolderaction_triggered();

@@ -32,10 +32,9 @@ ProcessText::ProcessText(QWidget *parent)
     connect(ui->eraseCommentSymbolButton, &QPushButton::clicked, this, &ProcessText::removeAnnotators);
 
     // 网站
-    connect(ui->getHTTPvalueButton, &QPushButton::clicked, this, &ProcessText::pickCherryHREF);
+    connect(ui->getHTTPvalueButton, &QPushButton::clicked, this, &ProcessText::extractWebsite);
     connect(ui->getEqualDomainButton, &QPushButton::clicked, this, &ProcessText::getEqualDomain);
     connect(ui->getDomainButton, &QPushButton::clicked, this, &ProcessText::getDomain);
-    connect(ui->getHREFvalueButton, &QPushButton::clicked, this, &ProcessText::getHREFvalue);
 
     // 网络
     connect(ui->filterIPv4Button, &QPushButton::clicked, this, &ProcessText::filterIPv4);
@@ -503,38 +502,8 @@ void ProcessText::setDownSequence() {
     last_action = [this]() { setDownSequence(); };
 }
 
-// 提取 href 字段
-void ProcessText::getHREFvalue() {
-    QString text = ui->textEdit->toPlainText();
-    QString perv_text = text;
-    QStringList lines = text.split("\n", Qt::SkipEmptyParts);
-    QSet<QString> urls;
-
-    QRegularExpression website_regular(R"((?i)href="([^"]+)"")");
-
-    QString new_text;
-
-    for (const QString &line : lines) {
-        QRegularExpressionMatchIterator i = website_regular.globalMatch(line);
-        while (i.hasNext()) {
-            QRegularExpressionMatch match = i.next();
-            QString url = match.captured(1);
-
-            if (!urls.contains(url)) {
-                urls.insert(url);
-                new_text += url + "\n";
-            }
-        }
-    }
-
-    undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
-    ui->textEdit->setText(new_text);
-
-    last_action = [this]() { getHREFvalue(); };
-}
-
 // 提取网站
-void ProcessText::pickCherryHREF() {
+void ProcessText::extractWebsite() {
     QString text = ui->textEdit->toPlainText();
     QString perv_text = text;
     QStringList lines = text.split("\n", Qt::SkipEmptyParts);
@@ -560,7 +529,7 @@ void ProcessText::pickCherryHREF() {
     undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
     ui->textEdit->setText(new_text);
 
-    last_action = [this]() { pickCherryHREF(); };
+    last_action = [this]() { extractWebsite(); };
 }
 
 // 提取相同域名的网站
