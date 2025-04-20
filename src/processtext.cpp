@@ -31,6 +31,9 @@ ProcessText::ProcessText(QWidget *parent)
     connect(ui->replaceSlashButton, &QPushButton::clicked, this, &ProcessText::replaceSlash);
     connect(ui->eraseCommentSymbolButton, &QPushButton::clicked, this, &ProcessText::removeAnnotators);
 
+    // 提取
+    connect(ui->filterSpecialCharsButton, &QPushButton::clicked, this, &ProcessText::filterSpecialChars);
+
     // 网站
     connect(ui->getHTTPvalueButton, &QPushButton::clicked, this, &ProcessText::extractWebsite);
     connect(ui->getEqualDomainButton, &QPushButton::clicked, this, &ProcessText::getEqualDomain);
@@ -500,6 +503,29 @@ void ProcessText::setDownSequence() {
     ui->textEdit->setText(text);
 
     last_action = [this]() { setDownSequence(); };
+}
+
+// 提取
+// 过滤特殊符号
+void ProcessText::filterSpecialChars() {
+    QString text = ui->textEdit->toPlainText();
+    QString prev_text = text;
+    QStringList lines = text.split("\n", Qt::SkipEmptyParts);
+
+    QString new_text;
+
+    // 保留：中文、英文、数字、空格
+    QRegularExpression clean_regex(R"([^a-zA-Z0-9])"); // 过滤所有特殊符号
+
+    for (QString line : lines) {
+        line.replace(clean_regex, "");  // 去除特殊符号
+        new_text += line + "\n";
+    }
+
+    undo_stack->push(new TextDispose(ui->textEdit, prev_text, new_text));
+    ui->textEdit->setText(new_text);
+
+    last_action = [this]() { filterSpecialChars(); };
 }
 
 // 提取网站
