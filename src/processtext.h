@@ -69,6 +69,7 @@ private slots:
     void replaceSlash();
     // 提取内容
     void filterSpecialChars();
+    void extractEqualContent();
     // 处理网站内容
     void getDomain();
     void getEqualDomain();

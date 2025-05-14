@@ -33,7 +33,7 @@ ProcessText::ProcessText(QWidget *parent)
 
     // 提取
     connect(ui->filterSpecialCharsButton, &QPushButton::clicked, this, &ProcessText::filterSpecialChars);
-
+    connect(ui->extractEqualContentBotton, &QPushButton::clicked, this, &ProcessText::extractEqualContent);
     // 网站
     connect(ui->getHTTPvalueButton, &QPushButton::clicked, this, &ProcessText::extractWebsite);
     connect(ui->getEqualDomainButton, &QPushButton::clicked, this, &ProcessText::getEqualDomain);
@@ -526,6 +526,32 @@ void ProcessText::filterSpecialChars() {
     ui->textEdit->setText(new_text);
 
     last_action = [this]() { filterSpecialChars(); };
+}
+
+// 提取相同内容
+void ProcessText::extractEqualContent() {
+    QString text = ui->textEdit->toPlainText();
+    QString prev_text = text;
+    QStringList lines = text.split("\n", Qt::SkipEmptyParts);
+
+    QHash<QString, int> line_counts;
+    for (const QString &line : lines) {
+        line_counts[line]++;
+    }
+
+    QStringList duplicate_lines;
+    for (const QString &line : lines) {
+        if (line_counts.value(line) > 1 && !duplicate_lines.contains(line)) {
+            duplicate_lines.append(line);
+        }
+    }
+
+    QString new_text = duplicate_lines.join("\n") + "\n";
+
+    undo_stack->push(new TextDispose(ui->textEdit, prev_text, new_text));
+    ui->textEdit->setText(new_text);
+
+    last_action = [this]() { extractEqualContent(); };
 }
 
 // 提取网站
