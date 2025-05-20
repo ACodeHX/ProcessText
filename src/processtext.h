@@ -70,6 +70,7 @@ private slots:
     // 提取内容
     void filterSpecialChars();
     void extractEqualContent();
+    void extractCNValue();
     // 处理网站内容
     void getDomain();
     void getEqualDomain();

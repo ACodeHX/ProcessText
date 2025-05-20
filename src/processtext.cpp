@@ -34,6 +34,7 @@ ProcessText::ProcessText(QWidget *parent)
     // 提取
     connect(ui->filterSpecialCharsButton, &QPushButton::clicked, this, &ProcessText::filterSpecialChars);
     connect(ui->extractEqualContentBotton, &QPushButton::clicked, this, &ProcessText::extractEqualContent);
+    connect(ui->extractCNValueButton, &QPushButton::clicked, this, &ProcessText::extractCNValue);
     // 网站
     connect(ui->getHTTPvalueButton, &QPushButton::clicked, this, &ProcessText::extractWebsite);
     connect(ui->getEqualDomainButton, &QPushButton::clicked, this, &ProcessText::getEqualDomain);
@@ -552,6 +553,29 @@ void ProcessText::extractEqualContent() {
     ui->textEdit->setText(new_text);
 
     last_action = [this]() { extractEqualContent(); };
+}
+
+// 提取中文字段
+void ProcessText::extractCNValue() {
+    QString text = ui->textEdit->toPlainText();
+    QString prev_text = text;
+
+    // 匹配所有中文字符（包括简体和繁体）
+    QRegularExpression re("[\u4e00-\u9fa5]+");
+    QRegularExpressionMatchIterator it = re.globalMatch(text);
+
+    QStringList cn_values;
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+        cn_values.append(match.captured(0));
+    }
+
+    QString new_text = cn_values.join("\n") + "\n";
+
+    undo_stack->push(new TextDispose(ui->textEdit, prev_text, new_text));
+    ui->textEdit->setText(new_text);
+
+    last_action = [this]() { extractCNValue(); };
 }
 
 // 提取网站
