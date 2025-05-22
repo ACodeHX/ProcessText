@@ -290,6 +290,24 @@ void ProcessText::repeatLastAction() {
     }
 }
 
+void ProcessText::keyPressEvent(QKeyEvent *event)
+{
+    // 检测 Ctrl + Tab
+    if (event->key() == Qt::Key_Tab && event->modifiers() == Qt::ControlModifier) {
+        int currentIndex = ui->tabWidget->currentIndex();
+        int nextIndex = (currentIndex + 1) % ui->tabWidget->count();
+        ui->tabWidget->setCurrentIndex(nextIndex);
+    }
+    // 检测 Ctrl + Shift + Tab
+    else if (event->key() == Qt::Key_Backtab && event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier)) {
+        int currentIndex = ui->tabWidget->currentIndex();
+        int previousIndex = (currentIndex - 1 + ui->tabWidget->count()) % ui->tabWidget->count();
+        ui->tabWidget->setCurrentIndex(previousIndex);
+    } else {
+        QMainWindow::keyPressEvent(event);
+    }
+}
+
 // 添加
 // 在文本前添加内容
 void ProcessText::addContentBeform() {
