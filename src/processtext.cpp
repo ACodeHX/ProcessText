@@ -159,7 +159,7 @@ int ProcessText::judgeFile() {
         return 0;
     }
     else if (path_info.isFile()) {
-        qDebug() << "is dir";
+        qDebug() << "is file";
         return 1;
     }
 
@@ -350,9 +350,7 @@ void ProcessText::addContentBeform() {
 
 // 添加引号按钮
 void ProcessText::addQuotation() {
-    int value = judgeFolder();
-
-    if (value == 1) {
+    if (judgeFolder() == 1) {
         processFolder([](QTextStream &in,QTextStream &out) {
             while (!in.atEnd()) {
                 QString line = in.readLine();
@@ -372,9 +370,7 @@ void ProcessText::addQuotation() {
 
 // 末尾添加逗号
 void ProcessText::addLastComma() {
-    int value = judgeFolder();
-
-    if (value == 1) {
+    if (judgeFolder() == 1) {
         processFolder([](QTextStream &in,QTextStream &out) {
             while (!in.atEnd()) {
                 QString line = in.readLine();
@@ -395,9 +391,7 @@ void ProcessText::addLastComma() {
 // 修改
 // 将中文符号替换成英文按钮
 void ProcessText::replaceCNtoENsymbol() {
-    int value = judgeFolder();
-
-    if (value == 1) {
+    if (judgeFolder() == 1) {
         processFolder([](QTextStream &in,QTextStream &out) {
             while (!in.atEnd()) {
                 QString line = in.readLine();
@@ -427,9 +421,7 @@ void ProcessText::replaceCNtoENsymbol() {
 
 // 去除注释符
 void ProcessText::removeAnnotators() {
-    int value = judgeFolder();
-
-    if (value == 1) {
+    if (judgeFolder() == 1) {
         processFolder([](QTextStream &in,QTextStream &out){
             QString line = in.readLine();
             int index = line.indexOf("//");
@@ -455,9 +447,7 @@ void ProcessText::removeAnnotators() {
 
 // 替换大小写字母
 void ProcessText::convertCase() {
-    int value = judgeFolder();
-
-    if (value == 1) {
+    if (judgeFolder() == 1) {
         processFolder([](QTextStream &in,QTextStream &out) {
             while (!in.atEnd()) {
                 QString line = in.readLine();
@@ -526,8 +516,7 @@ void ProcessText::setDownSequence() {
 
 // 繁简替换
 void ProcessText::simplifyText() {
-    int value = judgeFolder();
-    if (value == 1) {
+    if (judgeFolder() == 1) {
         QString path = ui->lineEdit->text();
         QString program = "./data/opencc_batch.exe";
         QStringList arguments;
