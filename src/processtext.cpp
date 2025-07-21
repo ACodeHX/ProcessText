@@ -1,5 +1,5 @@
 #include "processtext.h"
-#include "src/ui_processtext.h"
+#include "ui_processtext.h"
 
 ProcessText::ProcessText(QWidget *parent)
     : QMainWindow(parent)
@@ -30,6 +30,7 @@ ProcessText::ProcessText(QWidget *parent)
     connect(ui->setDownSequenceButton, &QPushButton::clicked, this, &ProcessText::setDownSequence);
     connect(ui->replaceSlashButton, &QPushButton::clicked, this, &ProcessText::replaceSlash);
     connect(ui->eraseCommentSymbolButton, &QPushButton::clicked, this, &ProcessText::removeAnnotators);
+    connect(ui->simplifyTextButton, &QPushButton::clicked, this, &ProcessText::simplifyText);
 
     // 提取
     connect(ui->filterSpecialCharsButton, &QPushButton::clicked, this, &ProcessText::filterSpecialChars);
@@ -351,7 +352,6 @@ void ProcessText::addContentBeform() {
 void ProcessText::addQuotation() {
     int value = judgeFolder();
 
-
     if (value == 1) {
         processFolder([](QTextStream &in,QTextStream &out) {
             while (!in.atEnd()) {
@@ -472,7 +472,7 @@ void ProcessText::convertCase() {
             };
         });
     }
-    
+
     if (judgeTextExist()) {
         processText([](QString &line) {
             for (int i = 0; i < line.size(); i++) {
@@ -522,6 +522,23 @@ void ProcessText::setDownSequence() {
     ui->textEdit->setText(text);
 
     last_action = [this]() { setDownSequence(); };
+}
+
+// 繁简替换
+void ProcessText::simplifyText() {
+    int value = judgeFolder();
+    if (value == 1) {
+        QString path = ui->lineEdit->text();
+        QString program = "./data/opencc_batch.exe";
+        QStringList arguments;
+        arguments << "--reverse" << path;
+
+        QProcess process;
+        process.start(program, arguments);
+        process.waitForFinished();
+        QString output = process.readAllStandardOutput();
+        qDebug() << output;
+    }
 }
 
 // 提取

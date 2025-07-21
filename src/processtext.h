@@ -70,6 +70,7 @@ private slots:
     void removeAnnotators();
     void convertCase();
     void replaceSlash();
+    void simplifyText();
     // 提取内容
     void filterSpecialChars();
     void extractEqualContent();
