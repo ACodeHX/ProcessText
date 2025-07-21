@@ -1,5 +1,5 @@
 #include "processtext.h"
-#include "src/ui_processtext.h"
+#include "ui_processtext.h"
 
 ProcessText::ProcessText(QWidget *parent)
     : QMainWindow(parent)
@@ -30,13 +30,19 @@ ProcessText::ProcessText(QWidget *parent)
     connect(ui->setDownSequenceButton, &QPushButton::clicked, this, &ProcessText::setDownSequence);
     connect(ui->replaceSlashButton, &QPushButton::clicked, this, &ProcessText::replaceSlash);
     connect(ui->eraseCommentSymbolButton, &QPushButton::clicked, this, &ProcessText::removeAnnotators);
+    connect(ui->simplifyTextButton, &QPushButton::clicked, this, &ProcessText::simplifyText);
 
+    // 提取
+    connect(ui->filterSpecialCharsButton, &QPushButton::clicked, this, &ProcessText::filterSpecialChars);
+    connect(ui->extractEqualContentBotton, &QPushButton::clicked, this, &ProcessText::extractEqualContent);
+    connect(ui->extractCNValueButton, &QPushButton::clicked, this, &ProcessText::extractCNValue);
     // 网站
-    connect(ui->getHTTPvalueButton, &QPushButton::clicked, this, &ProcessText::pickCherryHREF);
+    connect(ui->getHTTPvalueButton, &QPushButton::clicked, this, &ProcessText::extractWebsite);
     connect(ui->getEqualDomainButton, &QPushButton::clicked, this, &ProcessText::getEqualDomain);
     connect(ui->getDomainButton, &QPushButton::clicked, this, &ProcessText::getDomain);
-    connect(ui->getHREFvalueButton, &QPushButton::clicked, this, &ProcessText::getHREFvalue);
 
+    // 网络
+    connect(ui->filterIPv4Button, &QPushButton::clicked, this, &ProcessText::filterIPv4);
 }
 
 ProcessText::~ProcessText()
@@ -153,7 +159,7 @@ int ProcessText::judgeFile() {
         return 0;
     }
     else if (path_info.isFile()) {
-        qDebug() << "is dir";
+        qDebug() << "is file";
         return 1;
     }
 
@@ -285,6 +291,24 @@ void ProcessText::repeatLastAction() {
     }
 }
 
+void ProcessText::keyPressEvent(QKeyEvent *event)
+{
+    // 检测 Ctrl + Tab
+    if (event->key() == Qt::Key_Tab && event->modifiers() == Qt::ControlModifier) {
+        int currentIndex = ui->tabWidget->currentIndex();
+        int nextIndex = (currentIndex + 1) % ui->tabWidget->count();
+        ui->tabWidget->setCurrentIndex(nextIndex);
+    }
+    // 检测 Ctrl + Shift + Tab
+    else if (event->key() == Qt::Key_Backtab && event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier)) {
+        int currentIndex = ui->tabWidget->currentIndex();
+        int previousIndex = (currentIndex - 1 + ui->tabWidget->count()) % ui->tabWidget->count();
+        ui->tabWidget->setCurrentIndex(previousIndex);
+    } else {
+        QMainWindow::keyPressEvent(event);
+    }
+}
+
 // 添加
 // 在文本前添加内容
 void ProcessText::addContentBeform() {
@@ -326,10 +350,7 @@ void ProcessText::addContentBeform() {
 
 // 添加引号按钮
 void ProcessText::addQuotation() {
-    int value = judgeFolder();
-
-
-    if (value == 1) {
+    if (judgeFolder() == 1) {
         processFolder([](QTextStream &in,QTextStream &out) {
             while (!in.atEnd()) {
                 QString line = in.readLine();
@@ -349,9 +370,7 @@ void ProcessText::addQuotation() {
 
 // 末尾添加逗号
 void ProcessText::addLastComma() {
-    int value = judgeFolder();
-
-    if (value == 1) {
+    if (judgeFolder() == 1) {
         processFolder([](QTextStream &in,QTextStream &out) {
             while (!in.atEnd()) {
                 QString line = in.readLine();
@@ -372,15 +391,15 @@ void ProcessText::addLastComma() {
 // 修改
 // 将中文符号替换成英文按钮
 void ProcessText::replaceCNtoENsymbol() {
-    int value = judgeFolder();
-
-    if (value == 1) {
+    if (judgeFolder() == 1) {
         processFolder([](QTextStream &in,QTextStream &out) {
             while (!in.atEnd()) {
                 QString line = in.readLine();
                 line.replace(QChar(0xff08), QChar('('));
                 line.replace(QChar(0xff09), QChar(')'));
                 line.replace(QChar(0x3002), QChar('.'));
+                line.replace(QChar(0xff1a), QChar(':'));
+                line.replace(QChar(0xff0c), QChar(','));
                 out << line <<"\n";
             };
         });
@@ -391,6 +410,8 @@ void ProcessText::replaceCNtoENsymbol() {
             line.replace(QChar(0xff08), QChar('('));
             line.replace(QChar(0xff09), QChar(')'));
             line.replace(QChar(0x3002), QChar('.'));
+            line.replace(QChar(0xff1a), QChar(':'));
+            line.replace(QChar(0xff0c), QChar(','));
             return line;
         });
     }
@@ -400,9 +421,7 @@ void ProcessText::replaceCNtoENsymbol() {
 
 // 去除注释符
 void ProcessText::removeAnnotators() {
-    int value = judgeFolder();
-
-    if (value == 1) {
+    if (judgeFolder() == 1) {
         processFolder([](QTextStream &in,QTextStream &out){
             QString line = in.readLine();
             int index = line.indexOf("//");
@@ -428,9 +447,7 @@ void ProcessText::removeAnnotators() {
 
 // 替换大小写字母
 void ProcessText::convertCase() {
-    int value = judgeFolder();
-
-    if (value == 1) {
+    if (judgeFolder() == 1) {
         processFolder([](QTextStream &in,QTextStream &out) {
             while (!in.atEnd()) {
                 QString line = in.readLine();
@@ -445,7 +462,7 @@ void ProcessText::convertCase() {
             };
         });
     }
-    
+
     if (judgeTextExist()) {
         processText([](QString &line) {
             for (int i = 0; i < line.size(); i++) {
@@ -497,38 +514,96 @@ void ProcessText::setDownSequence() {
     last_action = [this]() { setDownSequence(); };
 }
 
-// 提取 href 字段
-void ProcessText::getHREFvalue() {
-    QString text = ui->textEdit->toPlainText();
-    QString perv_text = text;
-    QStringList lines = text.split("\n", Qt::SkipEmptyParts);
-    QSet<QString> urls;
+// 繁简替换
+void ProcessText::simplifyText() {
+    if (judgeFolder() == 1) {
+        QString path = ui->lineEdit->text();
+        QString program = "./data/opencc_batch.exe";
+        QStringList arguments;
+        arguments << "--reverse" << path;
 
-    QRegularExpression website_regular(R"((?i)href="([^"]+)"")");
+        QProcess process;
+        process.start(program, arguments);
+        process.waitForFinished();
+        QString output = process.readAllStandardOutput();
+        qDebug() << output;
+    }
+}
+
+// 提取
+// 过滤特殊符号
+void ProcessText::filterSpecialChars() {
+    QString text = ui->textEdit->toPlainText();
+    QString prev_text = text;
+    QStringList lines = text.split("\n", Qt::SkipEmptyParts);
 
     QString new_text;
 
-    for (const QString &line : lines) {
-        QRegularExpressionMatchIterator i = website_regular.globalMatch(line);
-        while (i.hasNext()) {
-            QRegularExpressionMatch match = i.next();
-            QString url = match.captured(1);
+    // 保留：中文、英文、数字、空格
+    QRegularExpression clean_regex(R"([^a-zA-Z0-9])"); // 过滤所有特殊符号
 
-            if (!urls.contains(url)) {
-                urls.insert(url);
-                new_text += url + "\n";
-            }
+    for (QString line : lines) {
+        line.replace(clean_regex, "");  // 去除特殊符号
+        new_text += line + "\n";
+    }
+
+    undo_stack->push(new TextDispose(ui->textEdit, prev_text, new_text));
+    ui->textEdit->setText(new_text);
+
+    last_action = [this]() { filterSpecialChars(); };
+}
+
+// 提取相同内容
+void ProcessText::extractEqualContent() {
+    QString text = ui->textEdit->toPlainText();
+    QString prev_text = text;
+    QStringList lines = text.split("\n", Qt::SkipEmptyParts);
+
+    QHash<QString, int> line_counts;
+    for (const QString &line : lines) {
+        line_counts[line]++;
+    }
+
+    QStringList duplicate_lines;
+    for (const QString &line : lines) {
+        if (line_counts.value(line) > 1 && !duplicate_lines.contains(line)) {
+            duplicate_lines.append(line);
         }
     }
 
-    undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
+    QString new_text = duplicate_lines.join("\n") + "\n";
+
+    undo_stack->push(new TextDispose(ui->textEdit, prev_text, new_text));
     ui->textEdit->setText(new_text);
 
-    last_action = [this]() { getHREFvalue(); };
+    last_action = [this]() { extractEqualContent(); };
+}
+
+// 提取中文字段
+void ProcessText::extractCNValue() {
+    QString text = ui->textEdit->toPlainText();
+    QString prev_text = text;
+
+    // 匹配所有中文字符（包括简体和繁体）
+    QRegularExpression re("[\u4e00-\u9fa5]+");
+    QRegularExpressionMatchIterator it = re.globalMatch(text);
+
+    QStringList cn_values;
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+        cn_values.append(match.captured(0));
+    }
+
+    QString new_text = cn_values.join("\n") + "\n";
+
+    undo_stack->push(new TextDispose(ui->textEdit, prev_text, new_text));
+    ui->textEdit->setText(new_text);
+
+    last_action = [this]() { extractCNValue(); };
 }
 
 // 提取网站
-void ProcessText::pickCherryHREF() {
+void ProcessText::extractWebsite() {
     QString text = ui->textEdit->toPlainText();
     QString perv_text = text;
     QStringList lines = text.split("\n", Qt::SkipEmptyParts);
@@ -554,7 +629,7 @@ void ProcessText::pickCherryHREF() {
     undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
     ui->textEdit->setText(new_text);
 
-    last_action = [this]() { pickCherryHREF(); };
+    last_action = [this]() { extractWebsite(); };
 }
 
 // 提取相同域名的网站
@@ -650,6 +725,33 @@ void ProcessText::replaceSlash() {
     ui->textEdit->setText(text);
 
     last_action = [this]() { replaceSlash(); };
+}
+
+// 网络
+// 筛选IPv4
+void ProcessText::filterIPv4() {
+    QString text = ui->textEdit->toPlainText();
+    QString perv_text = text;
+    QStringList lines = text.split("\n", Qt::SkipEmptyParts);
+
+    // IPv4 正则表达式匹配
+    QRegularExpression ipv4Regex(R"(\b((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\b)");
+
+    QStringList filteredLines;
+    for (const QString &line : lines) {
+        QRegularExpressionMatch match = ipv4Regex.match(line);
+        if (match.hasMatch()) {
+            filteredLines.append(match.captured(0)); // 添加匹配的 IPv4 地址
+        }
+    }
+
+    text = filteredLines.join("\n");
+    QString new_text = text;
+
+    undo_stack->push(new TextDispose(ui->textEdit, perv_text, new_text));
+    ui->textEdit->setText(text);
+
+    last_action = [this]() { filterIPv4(); };
 }
 
 // 关于 的活动按钮

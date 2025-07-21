@@ -83,3 +83,7 @@ CMakeLists.txt.user*
 /doc/
 /.vscode/
 /desktop.ini
+
+/.cache/
+
+/.editorconfig

@@ -26,7 +26,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/content.h src/content.cpp src/content.ui
 
         src/about.h src/about.cpp src/about.ui
-        Other/t2s.exe
         data/data.qrc
 
     )
@@ -74,3 +73,7 @@ install(TARGETS ProcessText
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(ProcessText)
 endif()
+
+file(COPY ${CMAKE_SOURCE_DIR}/data/opencc_batch.exe
+  DESTINATION ${CMAKE_BINARY_DIR}/data)
+

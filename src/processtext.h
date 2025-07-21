@@ -14,9 +14,11 @@
 #include <QRegularExpression>
 #include <functional>
 #include <QProcess>
+#include <QKeyEvent>
 
 #include "content.h"
 #include "about.h"
+
 
 
 QT_BEGIN_NAMESPACE
@@ -33,6 +35,7 @@ public:
     ProcessText(QWidget *parent = nullptr);
     inline bool judgeTextExist();
     ~ProcessText();
+
 
 private:
     Ui::ProcessText *ui;
@@ -67,15 +70,24 @@ private slots:
     void removeAnnotators();
     void convertCase();
     void replaceSlash();
+    void simplifyText();
+    // 提取内容
+    void filterSpecialChars();
+    void extractEqualContent();
+    void extractCNValue();
     // 处理网站内容
     void getDomain();
     void getEqualDomain();
-    void pickCherryHREF();
-    void getHREFvalue();
+    void extractWebsite();
     void on_closeaction_triggered();
     void on_aboutaction_triggered();
-    void on_pushButton_clicked();
     void on_openfolderaction_triggered();
     void on_ClearTextBoxaction_triggered();
+    // 网络
+    void filterIPv4();
+
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+
 };
 #endif // PROCESSTEXT_H
